@@ -1,40 +1,37 @@
 package checkers;
 
 public class Player {
-//	Properties: color, name
-//	Methods: selectPiece(), selectDestination()
+
+	//Player data fields
+	private String name;
+	private String color;
 	
-	private String player1;
-	private String player2;
-	private String red;
-	private String black;
-	
+	//default constructor
 	public Player() {
-		player1 = "p1";
-		player2 = "p2";
-		red = "red";
-		black = "balck";
+		
 	}
-
-
-	public String getPlayer1() {
-		return player1;
+	
+	//constructor
+	public Player(String name, String color) {
+		this.name = name;
+		this.color = color;
 	}
-
-	public String getPlayer2() {
-		return player2;
+	
+	//get player name
+	public String getName() {
+		return name;
 	}
-
-	public String getRed() {
-		return red;
+	
+	// get player color
+	public String getColor() {
+		return color;
 	}
-
-	public String getBlack() {
-		return black;
-	}
+	
 	@Override
 	public String toString() {
-		return(player1 + ": " + red + "\n" + player2 + ": " + black);
+		return name + " (" + color + ")";
 	}
+
+
 
 }
