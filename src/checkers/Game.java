@@ -3,13 +3,16 @@ package checkers;
 import java.util.Scanner;
 
 public class Game {
-    // Game components (we'll add board, players, etc. as we build them)
+    // Game components
+    private Board board;  // The game board
     private Scanner scanner;
     private boolean gameRunning;
     
-    // Constructor - initialize the game
-
+    /**
+     * Constructor - initializes the game
+     */
     public Game() {
+        board = new Board();  // CREATE THE BOARD - this was missing!
         scanner = new Scanner(System.in);
         gameRunning = true;
     }
@@ -31,7 +34,7 @@ public class Game {
         }
         
         System.out.println("\n=== TEST COMPLETE ===");
-        System.out.println("Game class is working! Ready to add Board next.");
+        System.out.println("Game and Board classes are working! Ready to add Move validation next.");
         
         // Ask if they want to play again
         playAgain();
@@ -45,7 +48,7 @@ public class Game {
         System.out.print("Are you ready? (press enter to continue) ");
         scanner.nextLine();  // Wait for user to press enter
         
-        // Display a simple test board
+        // Display the board
         displayTestBoard();
         
         // Get the piece they want to move
@@ -59,12 +62,17 @@ public class Game {
         int toCol = getColumnInput("Enter column: ");
         
         // Show what they selected
-        System.out.println("\n✓ You selected piece at (" + fromRow + ", " + fromCol + ")");
-        System.out.println("✓ Moving to (" + toRow + ", " + toCol + ")");
+        System.out.println("\nYou selected piece at (" + fromRow + ", " + fromCol + ")");
+        System.out.println("Piece: " + board.getPiece(fromRow, fromCol));
+        System.out.println("Moving to (" + toRow + ", " + toCol + ")");
+        
+        // Actually move the piece on the board
+        board.movePiece(fromRow, fromCol, toRow, toCol);
+        System.out.println("\nPiece moved!");
     }
     
     /**
-     * Displays a simple test board (temporary until we build Board class)
+     * Displays the board with row and column numbers
      */
     private void displayTestBoard() {
         System.out.println("\n  0 1 2 3 4 5 6 7");  // Column numbers
@@ -72,9 +80,7 @@ public class Game {
         
         for (int row = 0; row < 8; row++) {
             System.out.print(row + "|");  // Row number
-            for (int col = 0; col < 8; col++) {
-                System.out.print("_ ");  // Empty spaces for now
-            }
+            board.displayRow(row);  // Use the Board class to display the row!
             System.out.println();
         }
     }
@@ -130,6 +136,7 @@ public class Game {
         
         if (response.equals("y") || response.equals("yes")) {
             gameRunning = true;
+            board = new Board();  // Reset the board with new pieces
             start();  // Start a new test
         } else {
             System.out.println("\nTest complete!");
