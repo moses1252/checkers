@@ -1,50 +1,45 @@
 package checkers;
 
 public class Board {
-    // 8x8 game board - stores characters representing pieces
-    // 'O' = Red piece, 'X' = Black piece, '_' = Empty space
-    private char[][] gameBoard;
+    // 8x8 game board - stores Piece objects
+    // null = Empty space
+    private Piece[][] gameBoard;
     
     /**
      * Constructor - initializes the board with starting positions
      */
     public Board() {
-        gameBoard = new char[8][8];
+        gameBoard = new Piece[8][8];
         initializeBoard();
     }
     
     /**
      * Sets up the board with pieces in starting positions
-     * Red (O) on top (rows 0-2), Black (X) on bottom (rows 5-7)
+     * Red pieces on top (rows 0-2), Black pieces on bottom (rows 5-7)
      * Pieces only go on dark squares (checkerboard pattern)
      */
     private void initializeBoard() {
-        // Fill the entire board with empty spaces first
-        for (int row = 0; row < 8; row++) {
-            for (int col = 0; col < 8; col++) {
-                gameBoard[row][col] = '_';
-            }
-        }
-        
-        // Place RED pieces (O) on rows 0, 1, 2
+        // Place RED pieces on rows 0, 1, 2
         for (int row = 0; row < 3; row++) {
             for (int col = 0; col < 8; col++) {
                 // Only place on "dark" squares (checkerboard pattern)
                 if ((row + col) % 2 == 1) {
-                    gameBoard[row][col] = 'O';
+                    gameBoard[row][col] = new Piece("RED", row, col);
                 }
             }
         }
         
-        // Place BLACK pieces (X) on rows 5, 6, 7
+        // Place BLACK pieces on rows 5, 6, 7
         for (int row = 5; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
                 // Only place on "dark" squares (checkerboard pattern)
                 if ((row + col) % 2 == 1) {
-                    gameBoard[row][col] = 'X';
+                    gameBoard[row][col] = new Piece("BLACK", row, col);
                 }
             }
         }
+        
+        // Rows 3 and 4 are empty (already null by default)
     }
     
     /**
@@ -53,7 +48,11 @@ public class Board {
      */
     public void displayRow(int row) {
         for (int col = 0; col < 8; col++) {
-            System.out.print(gameBoard[row][col] + " ");
+            if (gameBoard[row][col] == null) {
+                System.out.print("_ ");  // Empty space
+            } else {
+                System.out.print(gameBoard[row][col].getDisplayChar() + " ");
+            }
         }
     }
     
@@ -63,7 +62,11 @@ public class Board {
     public void displayBoard() {
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
-                System.out.print(gameBoard[row][col] + " ");
+                if (gameBoard[row][col] == null) {
+                    System.out.print("_ ");
+                } else {
+                    System.out.print(gameBoard[row][col].getDisplayChar() + " ");
+                }
             }
             System.out.println();
         }
@@ -71,13 +74,27 @@ public class Board {
     
     /**
      * Gets the piece at a specific position
-     * Returns the character at that position ('O', 'X', or '_')
+     * Returns the Piece object or null if empty
      */
-    public char getPiece(int row, int col) {
+    public Piece getPiece(int row, int col) {
         if (isValidPosition(row, col)) {
             return gameBoard[row][col];
         }
-        return '_';  // Return empty if invalid position
+        return null;
+    }
+    
+    /**
+     * Gets the display character at a position (for backwards compatibility)
+     * Returns 'O', 'X', 'R', 'K', or '_'
+     */
+    public char getPieceChar(int row, int col) {
+        if (isValidPosition(row, col)) {
+            if (gameBoard[row][col] == null) {
+                return '_';
+            }
+            return gameBoard[row][col].getDisplayChar();
+        }
+        return '_';
     }
     
     /**
@@ -86,13 +103,43 @@ public class Board {
      */
     public void movePiece(int fromRow, int fromCol, int toRow, int toCol) {
         // Get the piece at the starting position
-        char piece = gameBoard[fromRow][fromCol];
+        Piece piece = gameBoard[fromRow][fromCol];
         
-        // Place it at the destination
-        gameBoard[toRow][toCol] = piece;
-        
-        // Clear the starting position
-        gameBoard[fromRow][fromCol] = '_';
+        if (piece != null) {
+            // Update the piece's position
+            piece.setPosition(toRow, toCol);
+            
+            // Move it on the board
+            gameBoard[toRow][toCol] = piece;
+            gameBoard[fromRow][fromCol] = null;
+            
+            // Check if piece should be kinged
+            checkForKing(piece, toRow);
+        }
+    }
+    
+    /**
+     * Checks if a piece should become a king
+     * Red pieces become kings when they reach row 7 (bottom)
+     * Black pieces become kings when they reach row 0 (top)
+     */
+    private void checkForKing(Piece piece, int row) {
+        if (piece.getColor().equals("RED") && row == 7) {
+            piece.makeKing();
+            System.out.println("RED piece promoted to KING!");
+        } else if (piece.getColor().equals("BLACK") && row == 0) {
+            piece.makeKing();
+            System.out.println("BLACK piece promoted to KING!");
+        }
+    }
+    
+    /**
+     * Removes a piece at a specific position (used for jumped pieces)
+     */
+    public void removePiece(int row, int col) {
+        if (isValidPosition(row, col)) {
+            gameBoard[row][col] = null;
+        }
     }
     
     /**
@@ -103,6 +150,22 @@ public class Board {
     }
     
     /**
+     * Counts how many pieces a player has left
+     */
+    public int countPieces(String color) {
+        int count = 0;
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                if (gameBoard[row][col] != null && 
+                    gameBoard[row][col].getColor().equals(color)) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    }
+    
+    /**
      * Returns a string representation of the board
      */
     @Override
@@ -110,7 +173,11 @@ public class Board {
         String board = "";
         for (int row = 0; row < 8; row++) {
             for (int col = 0; col < 8; col++) {
-                board += gameBoard[row][col] + " ";
+                if (gameBoard[row][col] == null) {
+                    board += "_ ";
+                } else {
+                    board += gameBoard[row][col].getDisplayChar() + " ";
+                }
             }
             board += "\n";
         }

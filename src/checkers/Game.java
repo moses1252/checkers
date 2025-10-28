@@ -28,8 +28,12 @@ public class Game {
         
         // Main game loop (simplified for now)
         int turnCount = 0;
-        while (gameRunning && turnCount < 3) {  // Only 3 turns for testing
-            playTurn(turnCount % 2 == 0 ? "RED" : "BLACK");
+        while (gameRunning && turnCount < 6) {  // 6 turns for testing (3 per player)
+            // Keep trying until the player makes a valid move
+            boolean validTurn = false;
+            while (!validTurn) {
+                validTurn = playTurn(turnCount % 2 == 0 ? "RED" : "BLACK");
+            }
             turnCount++;
         }
         
@@ -42,8 +46,9 @@ public class Game {
     
     /**
      * Handles a single player's turn
+     * Returns true if turn was successful, false if they need to retry
      */
-    private void playTurn(String currentColor) {
+    private boolean playTurn(String currentColor) {
         System.out.println("\n" + currentColor + " player's turn");
         System.out.print("Are you ready? (press enter to continue) ");
         scanner.nextLine();  // Wait for user to press enter
@@ -61,14 +66,31 @@ public class Game {
         int toRow = getRowInput("Enter row: ");
         int toCol = getColumnInput("Enter column: ");
         
-        // Show what they selected
-        System.out.println("\nYou selected piece at (" + fromRow + ", " + fromCol + ")");
-        System.out.println("Piece: " + board.getPiece(fromRow, fromCol));
-        System.out.println("Moving to (" + toRow + ", " + toCol + ")");
+        // Create a Move object to validate
+        Move move = new Move(fromRow, fromCol, toRow, toCol, board);
         
-        // Actually move the piece on the board
-        board.movePiece(fromRow, fromCol, toRow, toCol);
-        System.out.println("\nPiece moved!");
+        // Check if the move is valid
+        if (move.isValid()) {
+            // Valid move - execute it!
+            System.out.println("\nValid move! Moving piece...");
+            
+            // If it's a jump, remove the jumped piece
+            if (move.isJump()) {
+                int midRow = move.getMiddleRow();
+                int midCol = move.getMiddleCol();
+                board.removePiece(midRow, midCol);  // Remove the jumped piece
+                System.out.println("Jumped over opponent's piece at (" + midRow + ", " + midCol + ")");
+            }
+            
+            // Move the piece
+            board.movePiece(fromRow, fromCol, toRow, toCol);
+            System.out.println("Piece moved from (" + fromRow + ", " + fromCol + ") to (" + toRow + ", " + toCol + ")");
+            return true;  // Turn successful
+        } else {
+            // Invalid move - player needs to try again
+            System.out.println("\nInvalid move! Try again.");
+            return false;  // Turn failed, needs retry
+        }
     }
     
     /**
