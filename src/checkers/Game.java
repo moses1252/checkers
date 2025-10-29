@@ -94,17 +94,23 @@ public class Game {
     }
     
     /**
-     * Displays the board with row and column numbers
+     * Displays the board with row and column numbers on all sides
      */
     private void displayTestBoard() {
-        System.out.println("\n  0 1 2 3 4 5 6 7");  // Column numbers
+        // Top column numbers
+        System.out.println("\n  0 1 2 3 4 5 6 7");
         System.out.println("  ---------------");
         
+        // Display each row with row numbers on left and right
         for (int row = 0; row < 8; row++) {
-            System.out.print(row + "|");  // Row number
-            board.displayRow(row);  // Use the Board class to display the row!
-            System.out.println();
+            System.out.print(row + "|");  // Left row number
+            board.displayRow(row);        // Display the board row
+            System.out.println("|" + row); // Right row number
         }
+        
+        // Bottom border and column numbers
+        System.out.println("  ---------------");
+        System.out.println("  0 1 2 3 4 5 6 7");
     }
     
     /**
